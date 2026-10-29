@@ -61,8 +61,9 @@
     if ($Push) {
         if (-not (Test-AsmRepoHasRemote $repo)) { throw '백업 저장소에 origin 원격이 없습니다.' }
         if ((Get-AsmRepoPrivacy $repo) -eq 'public') { throw '백업 저장소가 Public입니다. 비공개 저장소만 사용할 수 있어 중단합니다.' }
-        if (-not (Invoke-AsmGit -Repo $repo -GitArgs @('config', 'user.email') -AllowFail).Output) {
-            throw '백업 저장소에 git user.email/user.name이 설정되어 있지 않습니다.'
+        # 실제 git commit 이 쓰는 방식(설정 파일 + GIT_AUTHOR_*/GIT_COMMITTER_* 환경변수)으로 확인한다.
+        if ((Invoke-AsmGit -Repo $repo -GitArgs @('var', 'GIT_COMMITTER_IDENT') -AllowFail).ExitCode -ne 0) {
+            throw '백업 저장소에서 커밋할 git 사용자 정보(user.name/user.email)를 확인할 수 없습니다.'
         }
         Confirm-AsmAction -Yes:$Yes -Message "$($todo.Count)개 세션을 암호화해 비공개 저장소($repo)에 커밋하고 원격으로 푸시합니다."
         $branch = Get-AsmRepoBranch $repo
