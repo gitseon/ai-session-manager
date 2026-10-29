@@ -21,19 +21,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Pester 5 설치
-        shell: ${{ matrix.shell }}
-        run: |
-          Install-Module Pester -MinimumVersion 5.5.0 -Force -SkipPublisherCheck -Scope CurrentUser
-      - name: 테스트 실행
-        shell: ${{ matrix.shell }}
-        run: |
-          Import-Module Pester -MinimumVersion 5.5.0
-          $c = New-PesterConfiguration
-          $c.Run.Path = './tests'
-          $c.Run.Exit = $true
-          $c.Output.Verbosity = 'Detailed'
-          Invoke-Pester -Configuration $c
+      - name: Pester 테스트 (PowerShell 7)
+        if: matrix.shell == 'pwsh'
+        shell: pwsh
+        run: ./scripts/ci.ps1
+      - name: Pester 테스트 (Windows PowerShell 5.1)
+        if: matrix.shell == 'powershell'
+        shell: powershell
+        run: ./scripts/ci.ps1
 
   no-secrets-in-public-repo:
     name: 세션·비밀 파일 미포함 확인
