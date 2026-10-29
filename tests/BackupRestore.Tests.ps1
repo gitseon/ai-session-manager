@@ -5,7 +5,9 @@
     $env:ASM_PASSPHRASE = 'test-passphrase'
     $env:ASM_KDF_ITERATIONS = '1000'
 
-    $script:root = New-TestDir $TestDrive 'e2e'
+    # Pester 5 의 TestDrive 는 블록이 끝날 때 그 블록 안에서 새로 생긴 파일을 지운다.
+    # 가짜 원격(bare 저장소)에 푸시로 생긴 객체가 사라지면 복원 단계가 깨지므로 전용 임시 폴더를 쓴다.
+    $script:root = New-TestDir ([IO.Path]::GetTempPath()) ('asm-e2e-' + [guid]::NewGuid().ToString('N'))
     # 원본 PC(A)
     $script:aClaude = New-TestDir $script:root 'a-claude'
     $script:aCodex = New-TestDir $script:root 'a-codex'
@@ -30,6 +32,7 @@
     Initialize-Asm -Repo $script:work | Out-Null
 }
 AfterAll {
+    try { Remove-Item -LiteralPath $script:root -Recurse -Force -ErrorAction SilentlyContinue } catch { }
     Remove-Item Env:ASM_PASSPHRASE, Env:ASM_KDF_ITERATIONS, Env:ASM_HOME, Env:CLAUDE_CONFIG_DIR, Env:CODEX_HOME -ErrorAction SilentlyContinue
 }
 

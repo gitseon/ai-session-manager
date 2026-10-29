@@ -1,4 +1,4 @@
-﻿# 테스트 전용 헬퍼. 실제 사용자 세션 폴더(~/.claude, ~/.codex)는 절대 건드리지 않고 TestDrive 안의 가짜 데이터만 쓴다.
+﻿# 테스트 전용 헬퍼. 실제 사용자 세션 폴더(~/.claude, ~/.codex)는 절대 건드리지 않고 임시 폴더(TestDrive 또는 전용 임시 폴더) 안의 가짜 데이터만 쓴다.
 $script:ModulePath = Join-Path (Split-Path -Parent $PSScriptRoot) 'src/AiSessionManager/AiSessionManager.psd1'
 
 function Import-AsmForTest {
