@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'dev/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, shell: pwsh, name: 'Windows / PowerShell 7' }
+          - { os: windows-latest, shell: powershell, name: 'Windows / PowerShell 5.1' }
+          - { os: ubuntu-latest, shell: pwsh, name: 'Linux / PowerShell 7' }
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pester 5 설치
+        shell: ${{ matrix.shell }}
+        run: |
+          Install-Module Pester -MinimumVersion 5.5.0 -Force -SkipPublisherCheck -Scope CurrentUser
+      - name: 테스트 실행
+        shell: ${{ matrix.shell }}
+        run: |
+          Import-Module Pester -MinimumVersion 5.5.0
+          $c = New-PesterConfiguration
+          $c.Run.Path = './tests'
+          $c.Run.Exit = $true
+          $c.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $c
+
+  no-secrets-in-public-repo:
+    name: 세션·비밀 파일 미포함 확인
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 금지 파일 검사
+        run: |
+          bad=$(git ls-files | grep -Ei '(\.asm$|^sessions/|^manifest\.json$|auth\.json$|\.credentials\.json$|\.env$|\.pem$|\.key$|settings\.local\.json$)' || true)
+          if [ -n "$bad" ]; then echo "금지 파일이 커밋되었습니다:"; echo "$bad"; exit 1; fi

@@ -1,0 +1,15 @@
+# Public 저장소에는 코드·문서만. 세션 데이터·비밀은 절대 커밋하지 않는다.
+*.asm
+sessions/
+manifest.json
+.asm-repo
+.asm/
+.env
+.env.*
+*.key
+*.pem
+auth.json
+.credentials.json
+settings.local.json
+*.log
+TestResults*.xml
