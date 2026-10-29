@@ -53,7 +53,7 @@
             $msgs = @(Get-AsmMessagesFromBytes -Tool $meta.tool -Bytes $main.Bytes)
             $path = $Out
             if (-not $path) { $path = Join-AsmPath (Get-AsmHome) @('handoffs', "$($meta.tool)-$($meta.id).md") }
-            Write-AsmUtf8 $path (ConvertTo-AsmHandoffText -Meta $meta -Messages $msgs)
+            Write-AsmUtf8 $path (ConvertTo-AsmHandoffText -Meta $meta -Messages $msgs) -Bom
             $results += [pscustomobject]@{ Tool = $meta.tool; Id = $meta.id; Mode = 'handoff'; HandoffPath = $path; Files = @(); Conflicts = 0; Resume = $null }
             continue
         }

@@ -79,6 +79,9 @@ Describe 'backup' {
             Where-Object { [Text.Encoding]::GetEncoding(28591).GetString([IO.File]::ReadAllBytes($_.FullName)) -match 'FAKE-DO-NOT-UPLOAD|build the thing|working on it' }
         @($hit).Count | Should -Be 0
     }
+    It 'manifest.json 은 BOM 없는 UTF-8 JSON 이다' {
+        [IO.File]::ReadAllBytes((Join-Path $script:work 'manifest.json'))[0] | Should -Be 0x7B
+    }
     It '변경 없는 재백업은 unchanged 로 건너뛴다' {
         $r = Invoke-AsmBackup -Session $script:cid
         $r.Items[0].Status | Should -Be 'unchanged'
@@ -165,6 +168,8 @@ Describe 'restore (다른 PC 시뮬레이션)' {
         $out = Join-Path $script:root 'handoff.md'
         $r = Invoke-AsmRestore -Session $script:cid -Handoff -Out $out
         $r[0].Mode | Should -Be 'handoff'
+        $b = [IO.File]::ReadAllBytes($out)
+        ($b[0] -eq 0xEF -and $b[1] -eq 0xBB -and $b[2] -eq 0xBF) | Should -BeTrue
         $t = Get-Content -LiteralPath $out -Raw
         $t | Should -Match '최초 요청'
         $t | Should -Match 'build the thing'

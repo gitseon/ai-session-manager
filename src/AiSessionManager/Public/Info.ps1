@@ -105,6 +105,6 @@ function New-AsmHandoff {
     }
     $path = $Out
     if (-not $path) { $path = Join-AsmPath (Get-AsmHome) @('handoffs', "$($s.Tool)-$($s.Id).md") }
-    Write-AsmUtf8 $path (ConvertTo-AsmHandoffText -Meta $meta -Messages $msgs)
+    Write-AsmUtf8 $path (ConvertTo-AsmHandoffText -Meta $meta -Messages $msgs) -Bom
     return [pscustomobject]@{ Tool = $s.Tool; Id = $s.Id; HandoffPath = $path }
 }

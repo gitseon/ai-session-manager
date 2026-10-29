@@ -22,12 +22,14 @@ function Get-AsmConfigPath {
 }
 
 function Write-AsmUtf8 {
-    param([string]$Path, [string]$Text)
+    # -Bom: 사람이 읽는 문서용. Windows PowerShell 5.1 의 Get-Content 등이 BOM 없는 UTF-8 을 ANSI 로 읽어 한글이 깨지는 것을 막는다.
+    # JSON(설정·manifest)은 BOM 없이 쓴다(git diff 와 다른 도구와의 호환).
+    param([string]$Path, [string]$Text, [switch]$Bom)
     $dir = Split-Path -Parent $Path
     if ($dir -and -not (Test-Path -LiteralPath $dir)) {
         New-Item -ItemType Directory -Path $dir -Force | Out-Null
     }
-    [IO.File]::WriteAllText($Path, $Text, (New-Object Text.UTF8Encoding($false)))
+    [IO.File]::WriteAllText($Path, $Text, (New-Object Text.UTF8Encoding([bool]$Bom)))
 }
 
 function Read-AsmFileBytes {
