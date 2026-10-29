@@ -19,10 +19,10 @@
     [IO.File]::WriteAllText((Join-Path $script:aCodex 'auth.json'), '{"tokens":{"access_token":"FAKE-DO-NOT-UPLOAD"}}')
     # 비공개 원격(로컬 bare)과 작업 클론
     $script:remote = Join-Path $script:root 'remote.git'
-    & git init -q --bare -b main $script:remote
+    Invoke-TestGit init -q --bare -b main $script:remote | Out-Null
     $script:work = Join-Path $script:root 'work-a'
-    & git clone -q $script:remote $script:work 2>$null
-    & git -C $script:work checkout -q -B main 2>$null
+    Invoke-TestGit clone -q $script:remote $script:work | Out-Null
+    Invoke-TestGit -C $script:work checkout -q -B main | Out-Null
 
     $env:ASM_HOME = New-TestDir $script:root 'asmhome-a'
     $env:CLAUDE_CONFIG_DIR = $script:aClaude
@@ -61,19 +61,19 @@ Describe 'backup' {
         $r.Mode | Should -Be 'pushed'
         $r.Pushed | Should -BeTrue
         $r.RemoteVerified | Should -BeTrue
-        (& git -C $script:remote log --oneline main | Measure-Object).Count | Should -Be 1
+        (Invoke-TestGit -C $script:remote log --oneline main | Measure-Object).Count | Should -Be 1
     }
     It '원격 저장소에 평문·인증 파일·민감 문자열이 없다' {
-        $files = (& git -C $script:remote ls-tree -r --name-only main) -join "`n"
+        $files = (Invoke-TestGit -C $script:remote ls-tree -r --name-only main) -join "`n"
         $files | Should -Match 'sessions/claude/'
         $files | Should -Not -Match 'credentials'
         $files | Should -Not -Match 'auth\.json'
         $files | Should -Not -Match 'oauth'
         $files | Should -Not -Match '\.jsonl'
         $tmp = New-TestDir $script:root 'verify-clone'
-        & git clone -q $script:remote (Join-Path $tmp 'c') 2>$null
+        Invoke-TestGit clone -q $script:remote (Join-Path $tmp 'c') | Out-Null
         $hit = Get-ChildItem (Join-Path $tmp 'c') -Recurse -File | Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' } |
-            Where-Object { [Text.Encoding]::Latin1.GetString([IO.File]::ReadAllBytes($_.FullName)) -match 'FAKE-DO-NOT-UPLOAD|build the thing|working on it' }
+            Where-Object { [Text.Encoding]::GetEncoding(28591).GetString([IO.File]::ReadAllBytes($_.FullName)) -match 'FAKE-DO-NOT-UPLOAD|build the thing|working on it' }
         @($hit).Count | Should -Be 0
     }
     It '변경 없는 재백업은 unchanged 로 건너뛴다' {
@@ -102,7 +102,7 @@ Describe 'restore (다른 PC 시뮬레이션)' {
         $script:bClaude = New-TestDir $script:root 'b-claude'
         $script:bCodex = New-TestDir $script:root 'b-codex'
         $script:work2 = Join-Path $script:root 'work-b'
-        & git clone -q $script:remote $script:work2 2>$null
+        Invoke-TestGit clone -q $script:remote $script:work2 | Out-Null
         $env:ASM_HOME = New-TestDir $script:root 'asmhome-b'
         $env:CLAUDE_CONFIG_DIR = $script:bClaude
         $env:CODEX_HOME = $script:bCodex

@@ -54,3 +54,11 @@ function Set-TestGitIdentity {
     $env:GIT_AUTHOR_NAME = 'asm-test'; $env:GIT_AUTHOR_EMAIL = 'asm-test@example.invalid'
     $env:GIT_COMMITTER_NAME = 'asm-test'; $env:GIT_COMMITTER_EMAIL = 'asm-test@example.invalid'
 }
+
+function Invoke-TestGit {
+    # Windows PowerShell 5.1 에서는 git 의 stderr 경고가 ErrorActionPreference=Stop 일 때 예외가 되므로 Continue 로 감싼다.
+    $old = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try { $out = & git @args 2>&1 } finally { $ErrorActionPreference = $old }
+    return @($out | ForEach-Object { "$_" })
+}
