@@ -33,7 +33,7 @@ asm restore -Session <ID> -Pull          # 계획 출력
 asm restore -Session <ID> -Pull -Apply   # 실제 복원
 ```
 
-자세한 내용: [설치](docs/INSTALL.md) · [사용법](docs/USAGE.md) · [보안 정책](docs/SECURITY.md) · [세션 저장 형식과 검증 상태](docs/FORMATS.md)
+자세한 내용: [설치](docs/INSTALL.md) · [사용법](docs/USAGE.md) · [보안 정책](docs/SECURITY.md) · [세션 저장 형식과 검증 상태](docs/FORMATS.md) · [개발 인수인계](docs/DEVELOPMENT.md)
 
 ## 명령
 
